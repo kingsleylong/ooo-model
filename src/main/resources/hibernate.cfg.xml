@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <!--<property name="connection.url">jdbc:h2:tcp://192.168.31.101/~/Development/database/test</property>
+        <property name="connection.driver_class">org.h2.Driver</property>
+        <property name="connection.username">sa</property>
+        <property name="connection.password">sa</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.H2Dialect</property>-->
+        <property name="connection.url">jdbc:postgresql://nn:5740/postgres</property>
+        <property name="connection.driver_class">org.postgresql.Driver</property>
+        <property name="connection.username">postgres</property>
+        <property name="connection.password">postgres</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
+        <!-- DB schema will be updated if needed -->
+        <property name="hbm2ddl.auto">create-drop</property>
+        <property name="show_sql">true</property>
+        <mapping class="kiss.domain.Bill"/>
+        <mapping class="kiss.domain.PaymentSchedule"/>
+        <mapping class="kiss.domain.PaymentScheduleDetail"/>
+    </session-factory>
+</hibernate-configuration>
