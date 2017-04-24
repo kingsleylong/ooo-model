@@ -1,7 +1,5 @@
 package kiss.infrastructure.ormHandler;
 
-import kiss.domain.user.User;
-
 /**
  * Created by kiss on 2017/4/23.
  */
@@ -31,14 +29,24 @@ public abstract class DirtyCheckRepository<T> implements Repository<T>{
         EDITING
     }
 
-    public void execute(RepositoryCallback<T> callback) {
+    @Override
+    public T find(String id) {
+        T t = processFind(id);
+
+        return t;
+    }
+
+    @Override
+    public void store(T t) {
         if (!this.isEditingMode()) {
             throw new RuntimeException("");
         }
 
-        T t = callback.doInTemplate();
-
-        this.entityCopy.set(t);
-
+        processStore(t);
     }
+
+    protected abstract void processStore(T t);
+
+    protected abstract T processFind(String id);
+
 }
