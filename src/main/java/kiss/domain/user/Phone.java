@@ -7,9 +7,13 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 /**
  * Created by kiss on 2017/4/16.
  */
+@javax.persistence.Entity
 public class Phone extends Entity{
+    private String id;
     private String number;
     private String band;
+
+    private User user;
 
     public String getNumber() {
         return number;
@@ -24,7 +28,8 @@ public class Phone extends Entity{
     }
 
     public Phone(String id, String number, String band) {
-        super(id);
+//        super(id);
+        this.id = id;
         this.number = number;
         this.band = band;
     }
@@ -32,6 +37,15 @@ public class Phone extends Entity{
     public void setBand(String band) {
         this.band = band;
     }
+
+//    @Override
+    public String getId() {
+        return id;
+    }
+//
+//    public void setId(String id) {
+//        this.id = id;
+//    }
 
     @Override
     public boolean equals(Object o) {

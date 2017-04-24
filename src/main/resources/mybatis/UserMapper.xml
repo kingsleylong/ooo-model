@@ -26,6 +26,13 @@
         select * from users where id=#{value}
     </select>
 
+    <insert id="insertUser" parameterType="kiss.domain.user.User">
+        <selectKey keyProperty="id" resultType="String" order="BEFORE">
+            select '1' as id from users limit 1
+        </selectKey>
+        INSERT INTO users (id, name) VALUES (#{id}, #{name});
+    </insert>
+
     <select id="getDetailedUser" resultMap="detailedUserResultMap">
         SELECT u.id, u.name, p.id as phone_id, p.number, p.band
         FROM users u
@@ -36,12 +43,22 @@
     <resultMap id="detailedUserResultMap" type="kiss.domain.user.User">
         <constructor>
             <idArg column="id" javaType="java.lang.String"/>
+            <arg column="name" javaType="java.lang.String"/>
         </constructor>
-        <result property="name" column="name"/>
         <collection property="phones" ofType="kiss.domain.user.Phone">
-            <id property="id" column="phone_id"/>
-            <result property="number" column="number"/>
-            <result property="band" column="band"/>
+            <constructor>
+                <idArg name="id" column="id" javaType="java.lang.String"/>
+                <arg name="number" column="number" javaType="java.lang.String"/>
+                <arg name="band" column="band" javaType="java.lang.String"/>
+            </constructor>
+            <!--<constructor>
+                <idArg column="id" javaType="java.lang.String"/>
+                <arg column="number" javaType="java.lang.String"/>
+                <arg column="band" javaType="java.lang.String"/>
+            </constructor>-->
+            <!--<id property="id" column="id"/>-->
+            <!--<result property="number" column="number"/>-->
+            <!--<result property="band" column="band"/>-->
         </collection>
     </resultMap>
 

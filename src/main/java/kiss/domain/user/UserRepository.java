@@ -11,4 +11,6 @@ public interface UserRepository {
     User find(String userId);
 
     void store(User user);
+
+    void add(User user);
 }

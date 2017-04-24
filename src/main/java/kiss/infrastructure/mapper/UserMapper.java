@@ -26,4 +26,6 @@ public interface UserMapper {
   User getUser(String userId);
 
   User getDetailedUser(String userId);
+
+  void insertUser(User user);
 }

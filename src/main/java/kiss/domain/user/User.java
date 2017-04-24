@@ -15,19 +15,28 @@
  */
 package kiss.domain.user;
 
+import org.apache.ibatis.annotations.Mapper;
+
+import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * A simple bean that holds User info.
  */
+@Entity
 public class User {
 
+  @Id
   private String id;
 
   private String name;
 
+  @OneToMany(targetEntity = Phone.class, cascade = CascadeType.ALL, mappedBy = "user")
   private Set<Phone> phones;
+
+  @Transient
+  private String account;
 
   public User deepClone() {
     User userClone = new User(id);
@@ -77,5 +86,10 @@ public class User {
 
   public User(String id) {
     this.id = id;
+  }
+
+  public User(String id, String name) {
+    this.id = id;
+    this.name = name;
   }
 }

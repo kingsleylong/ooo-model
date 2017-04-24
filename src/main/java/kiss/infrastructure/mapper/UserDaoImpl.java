@@ -37,4 +37,9 @@ public class UserDaoImpl extends SqlSessionDaoSupport implements UserMapper
     return null;
   }
 
+  @Override
+  public void insertUser(User user) {
+
+  }
+
 }

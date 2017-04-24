@@ -55,6 +55,12 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public void add(User user) {
+        userMapper.insertUser(user);
+        System.out.println(user);
+    }
+
+    @Override
     public void editingMode() {
         this.editingMode = Boolean.TRUE;
     }

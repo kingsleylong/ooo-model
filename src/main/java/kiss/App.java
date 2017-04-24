@@ -1,5 +1,7 @@
 package kiss;
 
+import kiss.domain.user.User;
+import kiss.infrastructure.ormHandler.UserRepositoryImpl;
 import org.h2.tools.Server;
 
 import java.sql.SQLException;
@@ -20,5 +22,10 @@ public class App
 
         // stop the TCP Server
         server.stop();
+
+        UserRepositoryImpl userRepository = new UserRepositoryImpl();
+        userRepository.useEditingMode();
+        User user = userRepository.find("123");
+        userRepository.store(user);
     }
 }

@@ -39,12 +39,13 @@ public abstract class AbstractSampleTest {
 
   @Test
   public final void testFooService() {
-    User user = this.fooService.doSomeBusinessStuff("u1");
-    assertNotNull(user);
-    assertEquals("Pocoyo", user.getName());
-    assertEquals(2, user.getPhones().size());
-
     this.fooService.doSomeBusinessStuff2("u1");
+
+//    User user = this.fooService.doSomeBusinessStuff("u1");
+//    assertNotNull(user);
+//    assertEquals("Pocoyo", user.getName());
+//    assertEquals(2, user.getPhones().size());
+
   }
 
 }
