@@ -1,49 +1,46 @@
 package kiss.infrastructure.ormHandler;
 
 import kiss.domain.user.User;
+import kiss.domain.user.UserRepository;
 
 /**
  * Created by kiss on 2017/4/24.
  */
-public class UserRepositoryImpl extends DirtyCheckRepository<User>{
-//    @Override
-//    public User find(String id) {
-//        User user = null;
-//
-//        if (this.isEditingMode()) {
-//            this.addEditCopy(user);
-//        }
-//        return user;
-//    }
+public class UserRepositoryImpl extends DirtyCheckRepository<User> implements UserRepository{
 
     @Override
     public void add(User user) {
-        ensureEditMode();
+        persist(new RepositoryCallback<User>() {
+            @Override
+            public void doInsert(User entity) {
 
-        // TODO Persist user
-
-        this.addEditCopy(user);
+            }
+        });
     }
 
     @Override
-    public void store(User user) {
-        ensureEditMode();
-
-        User editCopy = this.getEditCopy();
-
-        // TODO Persist user
-
-        this.addEditCopy(user);
+    public User find(String userId) {
+        return null;
     }
 
     @Override
-    protected void processStore(User user) {
+    public void store(final User user) {
+        persist(new RepositoryCallback<User>() {
+            @Override
+            public void doInsert(User entity) {
 
-    }
+            }
 
-    @Override
-    public void remove(User user) {
+            @Override
+            public void doUpdate(User entity) {
 
+            }
+
+            @Override
+            public void doDelete(User entity) {
+
+            }
+        });
     }
 
     private void ensureEditMode() {
@@ -52,8 +49,8 @@ public class UserRepositoryImpl extends DirtyCheckRepository<User>{
         }
     }
 
-    @Override
-    protected User processFind(String id) {
-        return null;
+    public static void main(String[] args) {
+        UserRepository userRepository = new UserRepositoryImpl();
+//        userRepository.add(args[0]);
     }
 }

@@ -3,7 +3,7 @@ package kiss.infrastructure.ormHandler;
 /**
  * Created by kiss on 2017/4/23.
  */
-public abstract class DirtyCheckRepository<T> implements Repository<T>{
+public abstract class DirtyCheckRepository<T> {
     private ThreadLocal<T> entityCopy;
 
     private Mode mode = Mode.READING;
@@ -29,24 +29,13 @@ public abstract class DirtyCheckRepository<T> implements Repository<T>{
         EDITING
     }
 
-    @Override
-    public T find(String id) {
-        T t = processFind(id);
-
-        return t;
+    protected void persist(RepositoryCallback<T> callback) {
+//        switch (mode) {
+//            case READING:
+//                this.entityCopy.set(callback.doInTemplate(null));
+//            case EDITING:
+//                callback.doInTemplate(null);
+////                this.entityCopy.set();
+//        }
     }
-
-    @Override
-    public void store(T t) {
-        if (!this.isEditingMode()) {
-            throw new RuntimeException("");
-        }
-
-        processStore(t);
-    }
-
-    protected abstract void processStore(T t);
-
-    protected abstract T processFind(String id);
-
 }
