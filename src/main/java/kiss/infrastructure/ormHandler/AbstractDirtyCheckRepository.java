@@ -1,8 +1,6 @@
 package kiss.infrastructure.ormHandler;
 
-import kiss.domain.shared.CompareResult;
 import kiss.domain.shared.Entity;
-import kiss.domain.shared.UnoptimizedDeepCopy;
 import kiss.domain.user.User;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;

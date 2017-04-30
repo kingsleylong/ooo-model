@@ -1,15 +1,12 @@
 package kiss.infrastructure.ormHandler;
 
-import kiss.domain.shared.CompareResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * Created by kiss on 2017/4/19.

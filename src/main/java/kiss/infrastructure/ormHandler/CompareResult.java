@@ -1,4 +1,4 @@
-package kiss.domain.shared;
+package kiss.infrastructure.ormHandler;
 
 import lombok.AllArgsConstructor;
 import lombok.ToString;

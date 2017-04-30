@@ -2,6 +2,8 @@ package kiss.domain.shared;
 
 import kiss.domain.user.Phone;
 import kiss.infrastructure.ormHandler.CollectionComparator;
+import kiss.infrastructure.ormHandler.CompareResult;
+import kiss.infrastructure.ormHandler.UnoptimizedDeepCopy;
 import org.junit.Test;
 
 import java.util.Collection;
@@ -24,7 +26,7 @@ public class CollectionComparatorTest {
         origin.add(p1);
         origin.add(p2);
 
-        Collection<Phone> copy = (Collection<Phone>)UnoptimizedDeepCopy.copy(origin);
+        Collection<Phone> copy = (Collection<Phone>) UnoptimizedDeepCopy.copy(origin);
 
         CompareResult compareResult = new CollectionComparator<Phone>().compare(origin, copy);
         System.out.println(compareResult);
