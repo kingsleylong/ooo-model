@@ -1,12 +1,11 @@
 package kiss.infrastructure.ormHandler;
 
-import kiss.domain.shared.CollectionComparator;
 import kiss.domain.shared.CompareResult;
 import kiss.domain.shared.Entity;
+import kiss.domain.shared.UnoptimizedDeepCopy;
 import kiss.domain.user.User;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
 
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -21,7 +20,7 @@ import java.util.Collection;
  */
 @Slf4j
 public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
-    private ThreadLocal<T> entityCopy;
+    private final ThreadLocal<T> entityCopy = new ThreadLocal<T>();
 
     private Mode mode = Mode.READING;
 
@@ -30,15 +29,15 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
         this.mode = Mode.EDITING;
     }
 
-    Boolean isEditingMode() {
+    protected Boolean isEditingMode() {
         return this.mode.equals(Mode.EDITING);
     }
 
-    void addEditCopy(T t) {
-        this.entityCopy.set(t);
+    protected void addEditCopy(T t) {
+        this.entityCopy.set((T) UnoptimizedDeepCopy.copy(t));
     }
 
-    T getEditCopy() {
+    protected T getEditCopy() {
         return this.entityCopy.get();
     }
 
@@ -47,7 +46,7 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
         EDITING
     }
 
-    <D> void persistSaveOrUpdate(D origin, D current) throws IllegalAccessException, NoSuchFieldException, NoSuchMethodException, InvocationTargetException {
+    protected <D> void persistSaveOrUpdate(D origin, D current) throws IllegalAccessException, NoSuchFieldException, NoSuchMethodException, InvocationTargetException {
         if (null == current) {
             throw new IllegalArgumentException("参数校验异常：current对象为null。");
         }
@@ -59,7 +58,7 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
                 log.info("对象无变更：{}", current);
             } else {
                 log.info("对象有变更：{}", current);
-                Field idField = findIdField(current);
+                Field idField = findIdField(current.getClass());
                 if (null == idField) {
                     log.error("找不到ID属性,请检查注解：{}", current);
                     throw new PersistenceException("找不到ID属性,请检查注解。");
@@ -70,6 +69,7 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
         }
     }
 
+    // TODO 有递归调用，重点测试！！
     private <D> void cascadeSaveOrUpdate(D origin, D current) throws IllegalAccessException, NoSuchFieldException, NoSuchMethodException, InvocationTargetException {
         Field[] declaredFields = current.getClass().getDeclaredFields();
         for (Field field :
@@ -78,10 +78,20 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
             if (null == annotation) {
                 continue;
             }
+            boolean fieldAccessibleOrigin = field.isAccessible();
+            if (!fieldAccessibleOrigin) {
+                field.setAccessible(true);
+            }
             Collection<D> currentAssoc = (Collection<D>) field.get(current);
+            field.setAccessible(fieldAccessibleOrigin);
 
             Field originField = origin.getClass().getDeclaredField(field.getName());
+            fieldAccessibleOrigin = originField.isAccessible();
+            if (!fieldAccessibleOrigin) {
+                originField.setAccessible(true);
+            }
             Collection<D> originalAssoc = (Collection<D>) originField.get(origin);
+            originField.setAccessible(fieldAccessibleOrigin);
 
             CompareResult<D> compareResult = CollectionComparator.compare(originalAssoc, currentAssoc);
             if (compareResult.isDirty()) {
@@ -93,7 +103,7 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
     }
 
     private <D> void updateSelf(D origin, D current) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Method method = origin.getClass().getMethod("equalTo");
+        Method method = origin.getClass().getMethod("equalTo", Object.class);
         if (null != method) {
             Boolean invokeResult = (Boolean) method.invoke(origin, current);
             if (invokeResult) {
@@ -108,17 +118,17 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
     private <D> void saveOrUpdate(CompareResult<D> compareResult) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         Collection<D> elements = compareResult.getNewElements();
         if (CollectionUtils.isNotEmpty(elements)) {
-            log.debug("新增对象：{}", elements);
+            log.debug("新增对象，进行持久化：{}", elements);
             // TODO 新增持久化流程
         }
         elements = compareResult.getDeletedElements();
         if (CollectionUtils.isNotEmpty(elements)) {
-            log.debug("删除对象：{}", elements);
+            log.debug("删除对象，进行持久化：{}", elements);
             // TODO 删除持久化流程
         }
         elements = compareResult.getModifiedElements();
         if (CollectionUtils.isNotEmpty(elements)) {
-            log.debug("修改对象：{}", compareResult.getModifiedElements());
+            log.debug("修改对象，进行持久化：{}", compareResult.getModifiedElements());
             for (D domain:
                  elements) {
                 // TODO 从Comparator获取原对象
@@ -129,18 +139,17 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
         }
     }
 
-    // TODO 重点测试递归！！
-    private <D> Field findIdField(D current) {
-        if (current.getClass().equals(Object.class)) {
+    static <D> Field findIdField(Class<D> clazz) {
+        if (clazz.equals(Object.class)) {
             return null;
         }
 
-        Field[] declaredFields = current.getClass().getDeclaredFields();
+        Field[] declaredFields = clazz.getDeclaredFields();
         for (Field field :
                 declaredFields) {
             Id annotation = field.getAnnotation(Id.class);
             if (null == annotation) {
-                return findIdField(current.getClass().getSuperclass());
+                return findIdField(clazz.getSuperclass());
             } else {
                 return field;
             }
@@ -152,7 +161,7 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
         AbstractDirtyCheckRepository<User> repository = new AbstractDirtyCheckRepository<User>(){
 
         };
-        repository.findIdField(new User(""));
-        repository.findIdField(new Entity());
+        System.out.println(repository.findIdField(new User("", null, null, null).getClass()));
+        System.out.println(repository.findIdField(new Entity().getClass()));
     }
 }

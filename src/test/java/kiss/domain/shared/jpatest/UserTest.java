@@ -20,7 +20,7 @@ public class UserTest {
 
     @Test
     public void testJpaAnnotation() {
-        User user = new User("1", "Tom");
+        User user = new User("1", "Tom", null, null);
         Entity annotation = user.getClass().getAnnotation(Entity.class);
         System.out.println(annotation);
 

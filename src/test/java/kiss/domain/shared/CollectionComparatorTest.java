@@ -1,6 +1,7 @@
 package kiss.domain.shared;
 
 import kiss.domain.user.Phone;
+import kiss.infrastructure.ormHandler.CollectionComparator;
 import org.junit.Test;
 
 import java.util.Collection;
@@ -13,7 +14,7 @@ import java.util.Iterator;
 public class CollectionComparatorTest {
 
     @Test
-    public void testCompare() {
+    public void testCompare() throws IllegalAccessException {
         Phone p0 = new Phone("p0", "000000", "");
         Phone p1 = new Phone("p1", "1212", "");
         Phone p2 = new Phone("p2", "56324412", "");

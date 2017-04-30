@@ -42,7 +42,7 @@ public class FooService {
   }
 
   public void doSomeBusinessStuff2(String userId) {
-    userRepository.add(new User(null, "INSERTION"));
+    userRepository.add(new User(null, "INSERTION", null, null));
 
     userRepository.useEditingMode();
     User detailedUser = userRepository.find(userId);

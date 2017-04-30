@@ -6,12 +6,13 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import java.io.Serializable;
 
 /**
  * Created by kiss on 2017/4/16.
  */
 @javax.persistence.Entity
-public class Phone extends Entity{
+public class Phone extends Entity implements Serializable{
     @Id
     private String id;
     private String number;

@@ -27,7 +27,7 @@ public class UserRepositoryImpl implements UserRepository {
     public User find(String userId) {
         User detailedUser = userMapper.getDetailedUser(userId);
         if (editingMode) {
-            detailedUserOrigin = new User(null);
+            detailedUserOrigin = new User(null, null, null, null);
 //            BeanUtils.copyProperties(detailedUser, detailedUserOrigin);
             detailedUserOrigin = detailedUser.deepClone();
         }
