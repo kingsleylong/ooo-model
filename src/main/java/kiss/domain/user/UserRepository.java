@@ -1,11 +1,11 @@
 package kiss.domain.user;
 
-import org.springframework.stereotype.Repository;
+import kiss.infrastructure.ormHandler.Repository;
 
 /**
  * Created by kiss on 2017/4/16.
  */
-public interface UserRepository {
+public interface UserRepository extends Repository<User> {
     User find(String userId);
 
     void store(User user);

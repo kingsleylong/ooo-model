@@ -4,15 +4,20 @@ import kiss.domain.shared.Entity;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+
 /**
  * Created by kiss on 2017/4/16.
  */
 @javax.persistence.Entity
 public class Phone extends Entity{
+    @Id
     private String id;
     private String number;
     private String band;
 
+    @ManyToOne
     private User user;
 
     public String getNumber() {

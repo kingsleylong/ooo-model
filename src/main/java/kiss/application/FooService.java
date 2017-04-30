@@ -44,7 +44,7 @@ public class FooService {
   public void doSomeBusinessStuff2(String userId) {
     userRepository.add(new User(null, "INSERTION"));
 
-    userRepository.editingMode();
+    userRepository.useEditingMode();
     User detailedUser = userRepository.find(userId);
 //    User detailedUser = this.userMapper.getDetailedUser(userId);
     detailedUser.getPhones().clear();

@@ -6,16 +6,11 @@ import kiss.domain.user.UserRepository;
 /**
  * Created by kiss on 2017/4/24.
  */
-public class UserRepositoryImpl extends DirtyCheckRepository<User> implements UserRepository{
+public class UserRepositoryImpl extends AbstractDirtyCheckRepository<User> implements UserRepository{
 
     @Override
     public void add(User user) {
-        persist(new RepositoryCallback<User>() {
-            @Override
-            public void doInsert(User entity) {
 
-            }
-        });
     }
 
     @Override
@@ -24,23 +19,8 @@ public class UserRepositoryImpl extends DirtyCheckRepository<User> implements Us
     }
 
     @Override
-    public void store(final User user) {
-        persist(new RepositoryCallback<User>() {
-            @Override
-            public void doInsert(User entity) {
+    public void store(User user) {
 
-            }
-
-            @Override
-            public void doUpdate(User entity) {
-
-            }
-
-            @Override
-            public void doDelete(User entity) {
-
-            }
-        });
     }
 
     private void ensureEditMode() {
