@@ -16,7 +16,7 @@ import java.util.Collection;
 public class CompareResult<T> {
     private Collection<T> newElements;
     private Collection<T> deletedElements;
-    private Collection<T> modifiedElements;
+    private Collection<CollectionComparator.ModifiedElement<T>> modifiedElements;
 
     public Boolean isDirty() {
         return CollectionUtils.isNotEmpty(newElements)

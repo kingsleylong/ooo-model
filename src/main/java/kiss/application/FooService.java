@@ -48,7 +48,7 @@ public class FooService {
     User detailedUser = userRepository.find(userId);
 //    User detailedUser = this.userMapper.getDetailedUser(userId);
     detailedUser.getPhones().clear();
-    detailedUser.getPhones().add(new Phone("p5","125122352", ""));
+    detailedUser.getPhones().add(new Phone("p5","125122352", "", null));
     System.out.println(detailedUser.getPhones().toArray());
     userRepository.store(detailedUser);
   }

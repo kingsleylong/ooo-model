@@ -1,10 +1,13 @@
 package kiss.infrastructure.user;
 
+import kiss.domain.user.Phone;
 import kiss.domain.user.User;
 import kiss.domain.user.UserRepository;
 import kiss.infrastructure.ormHandler.AbstractDirtyCheckRepository;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by kiss on 2017/4/30.
@@ -13,6 +16,9 @@ public class UserRepositoryInMem extends AbstractDirtyCheckRepository<User> impl
     @Override
     public User find(String userId) {
         User user = new User(userId, null, null, null);
+        Set<Phone> phones = new HashSet<>();
+        phones.add(new Phone("180", null, "ChinaTelecom", user));
+        user.setPhones(phones);
         addEditCopy(user);
         return user;
     }

@@ -49,7 +49,7 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
             throw new IllegalArgumentException("参数校验异常：current对象为null。");
         }
         if (null == origin) {
-            log.debug("新增对象：{}", current);
+            log.info("新增对象，进行持久化：{}", current);
             // TODO 新增持久化流程
         } else {
             if (origin.equals(current)) {
@@ -67,7 +67,6 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
         }
     }
 
-    // TODO 有递归调用，重点测试！！
     private <D> void cascadeSaveOrUpdate(D origin, D current) throws IllegalAccessException, NoSuchFieldException, NoSuchMethodException, InvocationTargetException {
         Field[] declaredFields = current.getClass().getDeclaredFields();
         for (Field field :
@@ -124,15 +123,13 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
             log.debug("删除对象，进行持久化：{}", elements);
             // TODO 删除持久化流程
         }
-        elements = compareResult.getModifiedElements();
-        if (CollectionUtils.isNotEmpty(elements)) {
-            log.debug("修改对象，进行持久化：{}", compareResult.getModifiedElements());
-            for (D domain:
-                 elements) {
-                // TODO 从Comparator获取原对象
-                D originDomain = null;
-                // TODO 递归调用，重点测试！！
-                persistSaveOrUpdate(originDomain, domain);
+
+        Collection<CollectionComparator.ModifiedElement<D>> modifiedElements = compareResult.getModifiedElements();
+        if (CollectionUtils.isNotEmpty(modifiedElements)) {
+            log.debug("修改对象，递归调用persistSaveOrUpdate：{}", modifiedElements);
+            for (CollectionComparator.ModifiedElement<D> modifiedElement:
+                    modifiedElements) {
+                persistSaveOrUpdate(modifiedElement.getOrigin(), modifiedElement.getCurrent());
             }
         }
     }

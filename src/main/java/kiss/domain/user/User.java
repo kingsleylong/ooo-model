@@ -52,7 +52,7 @@ public class User implements Serializable{
     Set<Phone> phonesClone = new HashSet<Phone>(phones.size());
     User userClone = new User(id, name, phonesClone, null);
     for (Phone phone : phones) {
-      phonesClone.add(new Phone(phone.getId(), phone.getNumber(), phone.getBand()));
+      phonesClone.add(new Phone(phone.getId(), phone.getNumber(), phone.getBand(), userClone));
     }
     return userClone;
   }
