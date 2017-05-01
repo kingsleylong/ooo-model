@@ -6,25 +6,30 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PersistenceException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by kiss on 2017/4/23.
  */
 @Slf4j
 public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
-    private final ThreadLocal<T> entityCopy = new ThreadLocal<T>();
+    private final ThreadLocal<T> entityCopy = new ThreadLocal<>();
 
     private Mode mode = Mode.READING;
 
     @Override
     public void useEditingMode() {
         this.mode = Mode.EDITING;
+        log.info("进入Editing Mode, {}", Thread.currentThread());
     }
 
     protected Boolean isEditingMode() {
@@ -39,7 +44,7 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
         return this.entityCopy.get();
     }
 
-    enum Mode {
+    private enum Mode {
         READING,
         EDITING
     }
@@ -50,7 +55,7 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
         }
         if (null == origin) {
             log.info("新增对象，进行持久化：{}", current);
-            // TODO 新增持久化流程
+            persistSelf(current);
         } else {
             if (origin.equals(current)) {
                 log.info("对象无变更：{}", current);
@@ -65,6 +70,33 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
                 cascadeSaveOrUpdate(origin, current);
             }
         }
+    }
+
+    private <D> void persistSelf(D domain) throws IllegalAccessException {
+        insert(domain);
+
+        List<Field> associationFields = findFieldByAnnotation(domain.getClass(), OneToMany.class);
+        if (CollectionUtils.isNotEmpty(associationFields)) {
+            for (Field field :
+                    associationFields) {
+                Collection associations = (Collection) getFieldValue(domain, field);
+                for (Object assoc :
+                        associations) {
+                    persistSelf(assoc);
+                }
+            }
+        }
+    }
+
+    public  <D> Object getFieldValue(D domain, Field field) throws IllegalAccessException {
+        boolean fieldAccessible = field.isAccessible();
+        if (!fieldAccessible) {
+            field.setAccessible(true);
+        }
+        Object result = field.get(domain);
+
+        field.setAccessible(fieldAccessible);
+        return result;
     }
 
     private <D> void cascadeSaveOrUpdate(D origin, D current) throws IllegalAccessException, NoSuchFieldException, NoSuchMethodException, InvocationTargetException {
@@ -107,16 +139,23 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
                 log.info("无属性变更：{}", current);
             } else {
                 log.info("对象本身属性变更，进行持久化：{}", current);
-                // TODO 属性持久化流程
+                update(current);
             }
         }
     }
+
+    protected abstract <D> void insert(D domain);
+
+    protected abstract  <D> void update(D domain);
 
     private <D> void saveOrUpdate(CompareResult<D> compareResult) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         Collection<D> elements = compareResult.getNewElements();
         if (CollectionUtils.isNotEmpty(elements)) {
             log.debug("新增对象，进行持久化：{}", elements);
-            // TODO 新增持久化流程
+            for (D domain :
+                    elements) {
+                persistSelf(domain);
+            }
         }
         elements = compareResult.getDeletedElements();
         if (CollectionUtils.isNotEmpty(elements)) {
@@ -135,28 +174,62 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
     }
 
     static <D> Field findIdField(Class<D> clazz) {
-        if (clazz.equals(Object.class)) {
+        List<Field> fieldList = findFieldByAnnotation(clazz, Id.class);
+        if (CollectionUtils.isEmpty(fieldList)) {
             return null;
         }
+        if (fieldList.size() > 1) {
+            log.error("一个实体不能有多个Id属性：{}", fieldList);
+            throw new PersistenceException("一个实体不能有多个Id属性" + clazz);
+        }
+        return fieldList.get(0);
+    }
 
+    static <D> List<Field> findFieldByAnnotation(Class<D> clazz, Class annotation) {
+        List<Field> resultList = null;
+
+        if (clazz.equals(Object.class)) {
+            return resultList;
+        }
+
+        resultList = new ArrayList<>();
+
+        // 查找对象自身属性
         Field[] declaredFields = clazz.getDeclaredFields();
         for (Field field :
                 declaredFields) {
-            Id annotation = field.getAnnotation(Id.class);
-            if (null == annotation) {
-                return findIdField(clazz.getSuperclass());
-            } else {
-                return field;
+            Annotation fieldAnnotation = field.getAnnotation(annotation);
+            if (null != fieldAnnotation) {
+                resultList.add(field);
             }
         }
-        return null;
+        // 查找父类属性
+        List<Field> superFields = findFieldByAnnotation(clazz.getSuperclass(), annotation);
+        if (CollectionUtils.isNotEmpty(superFields)) {
+            resultList.addAll(superFields);
+        }
+
+        return resultList;
     }
 
     public static void main(String[] args) {
         AbstractDirtyCheckRepository<User> repository = new AbstractDirtyCheckRepository<User>(){
 
+            @Override
+            protected <D> void insert(D origin) {
+
+            }
+
+            @Override
+            protected <D> void update(D current) {
+
+            }
         };
-        System.out.println(repository.findIdField(new User("", null, null, null).getClass()));
-        System.out.println(repository.findIdField(new Entity().getClass()));
+//        System.out.println(repository.findIdField(new User("", null, null, null).getClass()));
+//        System.out.println(repository.findIdField(new Entity().getClass()));
+        System.out.println(repository.findFieldByAnnotation(new User("", null, null, null).getClass(), Id.class));
+        System.out.println(repository.findFieldByAnnotation(new User("", null, null, null).getClass(), OneToMany.class));
+        System.out.println(repository.findFieldByAnnotation(new User("", null, null, null).getClass(), ManyToOne.class));
+        System.out.println(repository.findFieldByAnnotation(new Entity().getClass(), Id.class));
     }
 }
