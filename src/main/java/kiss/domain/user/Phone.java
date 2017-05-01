@@ -20,7 +20,7 @@ import java.io.Serializable;
 @ToString(exclude = "user")
 @AllArgsConstructor
 @EqualsAndHashCode(exclude = "user")
-public class Phone extends Entity implements Serializable{
+public class Phone implements Serializable{
     @Id
     private String id;
     private String number;
