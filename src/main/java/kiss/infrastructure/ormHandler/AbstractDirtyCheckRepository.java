@@ -61,8 +61,8 @@ public abstract class AbstractDirtyCheckRepository<T> implements Repository<T> {
                     log.error("找不到ID属性,请检查注解：{}", current);
                     throw new PersistenceException("找不到ID属性,请检查注解。");
                 }
-                cascadeSaveOrUpdate(origin, current);
                 updateSelf(origin, current);
+                cascadeSaveOrUpdate(origin, current);
             }
         }
     }
